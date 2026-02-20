@@ -200,7 +200,7 @@ export default async function handler(req, res) {
         <button class="popup-btn" onclick="togglePopup()" title="Close">✕</button>
       </div>
     </div>
-    <iframe id="widget-frame" src="${proxyOrigin}/api/widget-frame?key=${embedKey}"></iframe>
+    <iframe id="widget-frame" src="${proxyOrigin}/api/widget-frame?key=${embedKey}" allow="fullscreen" allowfullscreen></iframe>
   </div>
 
   <script>
@@ -314,7 +314,7 @@ export default async function handler(req, res) {
       id="shmake-widget-iframe"
       src="${proxyOrigin}/api/widget-frame?key=${key || widgetConfig.embedKey}"
       style="width: 100%; border: none; min-height: 700px; border-radius: 12px; background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.08);"
-      allow="clipboard-write"
+      allow="clipboard-write; fullscreen" allowfullscreen
     ></iframe>
     <script>
       (function() {
