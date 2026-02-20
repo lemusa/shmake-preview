@@ -3,6 +3,9 @@
 //
 // Usage: https://your-domain.vercel.app/api/preview?site=https://clientsite.co.nz
 //        Optional: &widget=shmakecut (defaults to shmakecut)
+//        Optional: &after=.some-class  (CSS selector — inject widget after this element)
+
+import { load } from 'cheerio';
 
 const ALLOWED_WIDGETS = {
   shmakecut: {
@@ -12,13 +15,13 @@ const ALLOWED_WIDGETS = {
 };
 
 export default async function handler(req, res) {
-  const { site, widget = 'shmakecut' } = req.query;
+  const { site, widget = 'shmakecut', after } = req.query;
 
   // --- Validation ---
   if (!site) {
     return res.status(400).json({
       error: 'Missing ?site= parameter',
-      usage: '/api/preview?site=https://example.co.nz',
+      usage: '/api/preview?site=https://example.co.nz&after=.some-class',
     });
   }
 
@@ -66,29 +69,26 @@ export default async function handler(req, res) {
     // --- Rewrite relative URLs to absolute ---
     const baseUrl = `${targetUrl.protocol}//${targetUrl.host}`;
 
-    // Rewrite href="/..." and src="/..." to absolute URLs
     html = html.replace(
       /((?:href|src|action)\s*=\s*["'])\/((?!\/)[^"']*["'])/gi,
       `$1${baseUrl}/$2`
     );
 
-    // Rewrite url(/ in CSS
     html = html.replace(
       /(url\(\s*["']?)\/((?!\/)[^)"']*)/gi,
       `$1${baseUrl}/$2`
     );
 
-    // --- Add <base> tag for anything we missed ---
-    const baseTag = `<base href="${baseUrl}/" target="_blank">`;
+    // --- Use cheerio to manipulate the DOM ---
+    const $ = load(html, { decodeEntities: false });
 
-    if (html.includes('<head>')) {
-      html = html.replace('<head>', `<head>\n${baseTag}`);
-    } else if (html.includes('<HEAD>')) {
-      html = html.replace('<HEAD>', `<HEAD>\n${baseTag}`);
+    // Add <base> tag
+    const baseTag = `<base href="${baseUrl}/" target="_blank">`;
+    if ($('head').length) {
+      $('head').prepend(baseTag);
     }
 
-    // --- Inject the widget via iframe (isolated from client CSS/JS) ---
-    // Use absolute URL because the <base> tag points to the client's domain
+    // --- Build the widget iframe injection ---
     const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
 
     const injection = `
@@ -121,7 +121,6 @@ export default async function handler(req, res) {
       allow="clipboard-write"
     ></iframe>
     <script>
-      // Auto-resize iframe to fit widget content
       (function() {
         var iframe = document.getElementById('shmake-widget-iframe');
         window.addEventListener('message', function(e) {
@@ -129,7 +128,6 @@ export default async function handler(req, res) {
             iframe.style.height = e.data.height + 'px';
           }
         });
-        // Fallback: poll iframe height
         var interval = setInterval(function() {
           try {
             var h = iframe.contentDocument.body.scrollHeight;
@@ -141,8 +139,25 @@ export default async function handler(req, res) {
     </script>
   </div>
 </div>
+<!-- /shmake widget preview -->
+`;
+
+    // --- Insert widget: after specific selector, or fall back to before </body> ---
+    let placed = false;
+    if (after) {
+      const target = $(after);
+      if (target.length) {
+        target.first().after(injection);
+        placed = true;
+      }
+    }
+    if (!placed) {
+      $('body').append(injection);
+    }
+
+    // --- Inject navigation blocker ---
+    $('body').append(`
 <script>
-  // Prevent navigation away from the preview
   document.addEventListener('click', function(e) {
     var link = e.target.closest('a');
     if (link && link.href && !link.href.startsWith('javascript:')) {
@@ -150,18 +165,9 @@ export default async function handler(req, res) {
     }
   }, true);
 </script>
-<!-- /shmake widget preview -->
-`;
+`);
 
-    if (html.includes('</body>')) {
-      html = html.replace('</body>', `${injection}\n</body>`);
-    } else if (html.includes('</BODY>')) {
-      html = html.replace('</BODY>', `${injection}\n</BODY>`);
-    } else {
-      html += injection;
-    }
-
-    // --- Inject a top banner so the client knows it's a preview ---
+    // --- Inject top banner ---
     const banner = `
 <div id="shmake-preview-banner" style="
   position: fixed;
@@ -212,17 +218,13 @@ export default async function handler(req, res) {
 </style>
 `;
 
-    if (html.includes('<body')) {
-      html = html.replace(/(<body[^>]*>)/i, `$1\n${banner}`);
-    }
+    $('body').prepend(banner);
 
     // --- Serve ---
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    // Prevent caching so we always get fresh content
     res.setHeader('Cache-Control', 'no-store');
-    // Remove X-Frame-Options that might have been set
     res.removeHeader('X-Frame-Options');
-    return res.status(200).send(html);
+    return res.status(200).send($.html());
   } catch (err) {
     return res.status(502).json({
       error: 'Failed to fetch target site',
