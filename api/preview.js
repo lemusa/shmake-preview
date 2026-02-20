@@ -7,11 +7,10 @@
 const ALLOWED_WIDGETS = {
   shmakecut: {
     name: 'shmakeCut',
-    script: 'https://shmake.co.nz/widgets/shmakecut.js', // Update with real URL
-    // Inline fallback if you want to inject HTML directly instead of a script:
+    script: 'https://demo.shmake.nz/shmakecut.iife.js',
     html: `
     <div id="shmakecut" data-key="26549d660df3b9b344a3af9bb6d4de44"></div>
-<script src="https://widget.shmake.nz/shmakecut.iife.js"></script>
+<script src="https://demo.shmake.nz/shmakecut.iife.js"></script>
     `,
   },
 };
