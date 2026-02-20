@@ -94,15 +94,29 @@
       <input type="url" id="siteUrl" placeholder="https://example.co.nz" autofocus>
     </div>
 
+    <div class="form-group">
+      <label>Insert after element <span style="opacity:0.5;text-transform:none">(optional CSS selector)</span></label>
+      <input type="text" id="afterSelector" placeholder=".content-section, #main, h2">
+    </div>
+
     <button onclick="go()">Generate Preview Link →</button>
+
+    <div id="linkOutput" style="display:none; margin-top: 16px; padding: 12px 16px; background: #1e293b; border-radius: 10px; border: 1px solid #334155; word-break: break-all;">
+      <label style="margin-bottom: 4px;">Preview link</label>
+      <a id="linkAnchor" href="#" target="_blank" style="color: #e67e22; font-size: 13px; text-decoration: none;"></a>
+      <span id="copyBtn" onclick="copyLink()" style="margin-left: 8px; cursor: pointer; opacity: 0.5; font-size: 12px;">copy</span>
+    </div>
 
     <div class="hint">
       <strong>How it works:</strong> Enter a client's URL and we'll generate a preview
       showing their site with the shmakeCut widget overlaid. Perfect for cold outreach —
       send them the link and let them see it in context.
       <br><br>
+      <strong>Insert after:</strong> Use a CSS selector to control where the widget appears
+      on the page. Leave blank to append at the bottom.
+      <br><br>
       <strong>Direct link format:</strong><br>
-      <code>/demo?site=https://clientsite.co.nz</code>
+      <code>/demo?site=https://clientsite.co.nz&amp;after=.my-class</code>
     </div>
   </div>
 
@@ -110,13 +124,31 @@
     function go() {
       const url = document.getElementById('siteUrl').value.trim();
       if (!url) return;
-      // Ensure URL has protocol
       const fullUrl = url.startsWith('http') ? url : `https://${url}`;
-      window.open(`/demo?site=${encodeURIComponent(fullUrl)}`, '_blank');
+      const after = document.getElementById('afterSelector').value.trim();
+
+      let link = `/demo?site=${encodeURIComponent(fullUrl)}`;
+      if (after) link += `&after=${encodeURIComponent(after)}`;
+
+      // Show the link
+      const output = document.getElementById('linkOutput');
+      const anchor = document.getElementById('linkAnchor');
+      const fullLink = location.origin + link;
+      anchor.href = link;
+      anchor.textContent = fullLink;
+      output.style.display = 'block';
+
+      window.open(link, '_blank');
     }
-    // Enter key
-    document.getElementById('siteUrl').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') go();
+    function copyLink() {
+      const text = document.getElementById('linkAnchor').textContent;
+      navigator.clipboard.writeText(text);
+      document.getElementById('copyBtn').textContent = 'copied!';
+      setTimeout(() => { document.getElementById('copyBtn').textContent = 'copy'; }, 2000);
+    }
+    // Enter key on either field
+    document.querySelectorAll('input').forEach(el => {
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
     });
   </script>
 </body>
