@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   }
 
   // --- Overlay mode: client site full-screen with floating button + popup widget ---
-  if (mode === 'overlay') {
+  if (mode === 'overlay' || mode === 'sidebar') {
     const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
     const embedKey = key || widgetConfig.embedKey;
 
