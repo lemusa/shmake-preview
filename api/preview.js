@@ -91,17 +91,48 @@ export default async function handler(req, res) {
       html = html.replace('<HEAD>', `<HEAD>\n${baseTag}`);
     }
 
+    // --- Strip CSP meta tags that might block the widget script ---
+    html = html.replace(/<meta[^>]*http-equiv\s*=\s*["']Content-Security-Policy["'][^>]*>/gi, '');
+
     // --- Inject the widget ---
     const injection = `
 <!-- shmake widget preview -->
-${widgetConfig.html}
+<div id="shmake-widget-section" style="
+  border-top: 3px solid #e67e22;
+  background: #f8fafc;
+  padding: 40px 20px;
+">
+  <div style="
+    max-width: 1200px;
+    margin: 0 auto;
+  ">
+    <div style="
+      text-align: center;
+      margin-bottom: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+      <span style="
+        display: inline-block;
+        background: linear-gradient(135deg, #e67e22, #d35400);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        margin-bottom: 8px;
+      ">WIDGET PREVIEW</span>
+      <p style="color: #64748b; font-size: 14px; margin: 8px 0 0 0;">This is how shmakeCut would appear on your website</p>
+    </div>
+    ${widgetConfig.html}
+  </div>
+</div>
 <script>
   // Prevent navigation away from the preview
   document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (link && link.href && !link.href.startsWith('javascript:')) {
       e.preventDefault();
-      // Optional: show a subtle tooltip
     }
   }, true);
 </script>
@@ -139,13 +170,20 @@ ${widgetConfig.html}
     <span style="opacity: 0.7; margin-left: 12px;">This is a preview of how the widget could look on your site</span>
   </div>
   <div style="display: flex; gap: 12px; align-items: center;">
-    <a href="https://shmake.co.nz/shmakecut" target="_blank" style="
+    <a href="#shmake-widget-section" onclick="event.preventDefault();document.getElementById('shmake-widget-section').scrollIntoView({behavior:'smooth'})" style="
       color: white;
       background: #e67e22;
       padding: 6px 16px;
       border-radius: 6px;
       text-decoration: none;
       font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    ">See Widget ↓</a>
+    <a href="https://shmake.co.nz/shmakecut" target="_blank" style="
+      color: white;
+      opacity: 0.7;
+      text-decoration: none;
       font-size: 13px;
     ">Learn More</a>
     <span onclick="this.parentElement.parentElement.remove();document.body.style.paddingTop='0'" style="
