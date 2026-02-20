@@ -10,9 +10,8 @@ const ALLOWED_WIDGETS = {
     script: 'https://shmake.co.nz/widgets/shmakecut.js', // Update with real URL
     // Inline fallback if you want to inject HTML directly instead of a script:
     html: `
-      <!-- shmakeCut Cutting Calculator -->
-<div id="shmakecut"></div>
-<script src="https://app.shmakecut.co.nz/embed/shmakecut.iife.js" data-key="9669005c78480794ea7a9b3a66ecdf03"></script>
+    <div id="shmakecut" data-key="26549d660df3b9b344a3af9bb6d4de44"></div>
+<script src="https://widget.shmake.nz/shmakecut.iife.js"></script>
     `,
   },
 };
