@@ -131,16 +131,26 @@ export default async function handler(req, res) {
       font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
       margin-left: 10px;
     }
-    #popup-close {
+    .popup-btn {
       background: none; border: none; cursor: pointer;
       font-size: 22px; color: #94a3b8; padding: 4px 8px; border-radius: 6px;
     }
-    #popup-close:hover { background: #f1f5f9; color: #475569; }
+    .popup-btn:hover { background: #f1f5f9; color: #475569; }
 
     #widget-frame {
       flex: 1; border: none; width: 100%;
       border-radius: 0 0 16px 16px;
     }
+
+    /* Fullscreen */
+    #popup.fullscreen {
+      width: 100vw; height: 100vh;
+      border-radius: 0;
+      top: 0; left: 0;
+      transform: none;
+    }
+    #popup.fullscreen.visible { transform: none; }
+    #popup.fullscreen #widget-frame { border-radius: 0; }
 
     /* Preview banner */
     #banner {
@@ -185,7 +195,10 @@ export default async function handler(req, res) {
         <span class="title">✂️ shmakeCut</span>
         <span class="badge">PREVIEW</span>
       </div>
-      <button id="popup-close" onclick="togglePopup()">✕</button>
+      <div style="display:flex;gap:4px;">
+        <button class="popup-btn" onclick="toggleFullscreen()" id="popup-fs" title="Toggle fullscreen">⛶</button>
+        <button class="popup-btn" onclick="togglePopup()" title="Close">✕</button>
+      </div>
     </div>
     <iframe id="widget-frame" src="${proxyOrigin}/api/widget-frame?key=${embedKey}"></iframe>
   </div>
@@ -200,14 +213,19 @@ export default async function handler(req, res) {
     }, 4000);
 
     var isOpen = false;
+    var isFullscreen = false;
     function togglePopup() {
       isOpen = !isOpen;
       document.getElementById('popup').classList.toggle('visible', isOpen);
       document.getElementById('backdrop').classList.toggle('visible', isOpen);
       document.getElementById('fab').classList.toggle('open', isOpen);
-      // Hide label immediately on first open
+      if (!isOpen && isFullscreen) { isFullscreen = false; document.getElementById('popup').classList.remove('fullscreen'); }
       var label = document.getElementById('fab-label');
       if (label) label.remove();
+    }
+    function toggleFullscreen() {
+      isFullscreen = !isFullscreen;
+      document.getElementById('popup').classList.toggle('fullscreen', isFullscreen);
     }
   </script>
 </body>
