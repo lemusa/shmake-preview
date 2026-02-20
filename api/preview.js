@@ -7,11 +7,7 @@
 const ALLOWED_WIDGETS = {
   shmakecut: {
     name: 'shmakeCut',
-    script: 'https://demo.shmake.nz/shmakecut.iife.js',
-    html: `
-    <div id="shmakecut" data-key="26549d660df3b9b344a3af9bb6d4de44"></div>
-<script src="https://demo.shmake.nz/shmakecut.iife.js"></script>
-    `,
+    embedKey: '26549d660df3b9b344a3af9bb6d4de44',
   },
 };
 
@@ -91,26 +87,17 @@ export default async function handler(req, res) {
       html = html.replace('<HEAD>', `<HEAD>\n${baseTag}`);
     }
 
-    // --- Strip CSP meta tags that might block the widget script ---
-    html = html.replace(/<meta[^>]*http-equiv\s*=\s*["']Content-Security-Policy["'][^>]*>/gi, '');
-
-    // --- Inject the widget ---
+    // --- Inject the widget via iframe (isolated from client CSS/JS) ---
     const injection = `
 <!-- shmake widget preview -->
 <div id="shmake-widget-section" style="
   border-top: 3px solid #e67e22;
   background: #f8fafc;
   padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 ">
-  <div style="
-    max-width: 1200px;
-    margin: 0 auto;
-  ">
-    <div style="
-      text-align: center;
-      margin-bottom: 24px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    ">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 24px;">
       <span style="
         display: inline-block;
         background: linear-gradient(135deg, #e67e22, #d35400);
@@ -124,13 +111,37 @@ export default async function handler(req, res) {
       ">WIDGET PREVIEW</span>
       <p style="color: #64748b; font-size: 14px; margin: 8px 0 0 0;">This is how shmakeCut would appear on your website</p>
     </div>
-    ${widgetConfig.html}
+    <iframe
+      id="shmake-widget-iframe"
+      src="/api/widget-frame?key=${widgetConfig.embedKey}"
+      style="width: 100%; border: none; min-height: 700px; border-radius: 12px; background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.08);"
+      allow="clipboard-write"
+    ></iframe>
+    <script>
+      // Auto-resize iframe to fit widget content
+      (function() {
+        var iframe = document.getElementById('shmake-widget-iframe');
+        window.addEventListener('message', function(e) {
+          if (e.data && e.data.type === 'shmakecut-resize') {
+            iframe.style.height = e.data.height + 'px';
+          }
+        });
+        // Fallback: poll iframe height
+        var interval = setInterval(function() {
+          try {
+            var h = iframe.contentDocument.body.scrollHeight;
+            if (h > 100) { iframe.style.height = h + 'px'; }
+          } catch(e) { clearInterval(interval); }
+        }, 500);
+        setTimeout(function() { clearInterval(interval); }, 15000);
+      })();
+    </script>
   </div>
 </div>
 <script>
   // Prevent navigation away from the preview
   document.addEventListener('click', function(e) {
-    const link = e.target.closest('a');
+    var link = e.target.closest('a');
     if (link && link.href && !link.href.startsWith('javascript:')) {
       e.preventDefault();
     }
