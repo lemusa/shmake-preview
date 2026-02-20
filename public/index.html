@@ -122,7 +122,7 @@
     <label>Preview mode</label>
     <div class="mode-toggle">
       <button type="button" class="active" onclick="setMode('inject')" id="mode-inject">Inject into page</button>
-      <button type="button" onclick="setMode('sidebar')" id="mode-sidebar">Sidebar overlay</button>
+      <button type="button" onclick="setMode('overlay')" id="mode-overlay">Popup overlay</button>
     </div>
 
     <div id="inject-options">
@@ -151,8 +151,8 @@
       send them the link and let them see it in context.
       <br><br>
       <strong>Inject mode:</strong> Proxies the site HTML and inserts the widget at a CSS selector.
-      Best for static sites. Use <strong>Sidebar</strong> mode for Wix, Squarespace, or
-      sites that block proxying.
+      Best for static sites. Use <strong>Popup overlay</strong> for Wix, Squarespace, or
+      sites that block proxying — shows a floating button on their site that opens the calculator.
       <br><br>
       <strong>Direct link format:</strong><br>
       <code>/demo?site=https://clientsite.co.nz&amp;after=.my-class&amp;key=abc123</code>
@@ -165,7 +165,7 @@
     function setMode(mode) {
       currentMode = mode;
       document.getElementById('mode-inject').classList.toggle('active', mode === 'inject');
-      document.getElementById('mode-sidebar').classList.toggle('active', mode === 'sidebar');
+      document.getElementById('mode-overlay').classList.toggle('active', mode === 'overlay');
       document.getElementById('inject-options').style.display = mode === 'inject' ? 'block' : 'none';
     }
 
@@ -177,8 +177,8 @@
       const key = document.getElementById('embedKey').value.trim();
 
       let link = `/demo?site=${encodeURIComponent(fullUrl)}`;
-      if (currentMode === 'sidebar') {
-        link += '&mode=sidebar';
+      if (currentMode === 'overlay') {
+        link += '&mode=overlay';
       } else if (after) {
         link += `&after=${encodeURIComponent(after)}`;
       }

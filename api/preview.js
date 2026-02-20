@@ -5,7 +5,7 @@
 //        Optional: &widget=shmakecut (defaults to shmakecut)
 //        Optional: &after=.some-class  (CSS selector — inject widget after this element)
 //        Optional: &key=EMBED_KEY      (tenant embed key for theming — defaults to demo key)
-//        Optional: &mode=sidebar       (sidebar overlay — works with Wix, Squarespace, etc.)
+//        Optional: &mode=overlay       (floating popup — works with Wix, Squarespace, etc.)
 
 import { load } from 'cheerio';
 
@@ -42,12 +42,12 @@ export default async function handler(req, res) {
     });
   }
 
-  // --- Sidebar mode: two iframes side by side, no proxy needed ---
-  if (mode === 'sidebar') {
+  // --- Overlay mode: client site full-screen with floating button + popup widget ---
+  if (mode === 'overlay') {
     const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
     const embedKey = key || widgetConfig.embedKey;
 
-    const sidebarHtml = `<!DOCTYPE html>
+    const overlayHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -55,113 +55,167 @@ export default async function handler(req, res) {
   <title>shmakeCut Preview — ${targetUrl.host}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+    body { overflow: hidden; }
+
+    #site-frame {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      border: none; z-index: 1;
+    }
+
+    /* Floating action button */
+    #fab {
+      position: fixed; bottom: 28px; right: 28px; z-index: 1000;
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(230, 126, 34, 0.5);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      color: white; font-size: 26px;
+    }
+    #fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(230, 126, 34, 0.6); }
+    #fab.open { transform: scale(0.9); }
+    #fab-label {
+      position: fixed; bottom: 36px; right: 100px; z-index: 1000;
+      background: #1a1a2e; color: white; padding: 8px 14px; border-radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+      animation: nudge 0.4s ease-out;
+    }
+    @keyframes nudge {
+      0% { opacity: 0; transform: translateX(8px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Backdrop */
+    #backdrop {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.4);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    #backdrop.visible { opacity: 1; pointer-events: auto; }
+
+    /* Popup panel */
+    #popup {
+      position: fixed; z-index: 600;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      width: min(900px, 92vw); height: min(85vh, 800px);
+      background: white; border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    #popup.visible {
+      opacity: 1; pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #popup-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+    #popup-header .title {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 15px; font-weight: 600; color: #1a1a2e;
+    }
+    #popup-header .badge {
+      display: inline-block; background: linear-gradient(135deg, #e67e22, #d35400);
+      color: white; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+      margin-left: 10px;
+    }
+    #popup-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 22px; color: #94a3b8; padding: 4px 8px; border-radius: 6px;
+    }
+    #popup-close:hover { background: #f1f5f9; color: #475569; }
+
+    #widget-frame {
+      flex: 1; border: none; width: 100%;
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* Preview banner */
     #banner {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       background: linear-gradient(135deg, #1a1a2e, #16213e);
-      color: white; padding: 10px 20px; font-size: 14px;
+      color: white; padding: 8px 20px; font-size: 13px;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     #banner a { color: white; text-decoration: none; }
-    #layout {
-      position: fixed; top: 48px; left: 0; right: 0; bottom: 0;
-      display: flex;
+    #banner .close-banner {
+      cursor: pointer; opacity: 0.5; font-size: 16px; margin-left: 12px;
     }
-    #site-frame {
-      flex: 1; border: none; height: 100%;
-    }
-    #widget-panel {
-      width: 520px; min-width: 420px; height: 100%;
-      border-left: 3px solid #e67e22;
-      display: flex; flex-direction: column; background: #f8fafc;
-    }
-    #widget-panel .panel-header {
-      padding: 16px 20px; text-align: center; background: #f8fafc;
-      border-bottom: 1px solid #e5e7eb; flex-shrink: 0;
-    }
-    #widget-panel .panel-header .badge {
-      display: inline-block; background: linear-gradient(135deg, #e67e22, #d35400);
-      color: white; padding: 4px 12px; border-radius: 20px;
-      font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
-    }
-    #widget-panel .panel-header p {
-      color: #64748b; font-size: 13px; margin-top: 4px;
-    }
-    #widget-frame {
-      flex: 1; border: none; width: 100%;
-    }
-    #resize-handle {
-      width: 6px; cursor: col-resize; background: transparent;
-      position: relative; flex-shrink: 0;
-    }
-    #resize-handle:hover, #resize-handle.active { background: #e67e22; }
-    @media (max-width: 900px) {
-      #layout { flex-direction: column; }
-      #widget-panel { width: 100%; min-width: unset; height: 50%; border-left: none; border-top: 3px solid #e67e22; }
-      #resize-handle { display: none; }
-    }
+    #banner .close-banner:hover { opacity: 1; }
   </style>
 </head>
 <body>
+  <!-- Thin preview banner -->
   <div id="banner">
     <div>
       <strong>✂️ shmakeCut Preview</strong>
-      <span style="opacity:0.7;margin-left:12px;">${targetUrl.host}</span>
+      <span style="opacity:0.7;margin-left:10px;">${targetUrl.host}</span>
     </div>
-    <div style="display:flex;gap:12px;align-items:center;">
-      <a href="https://shmake.co.nz/shmakecut" target="_blank" style="opacity:0.7;font-size:13px;">Learn More</a>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="https://shmake.co.nz/shmakecut" target="_blank" style="opacity:0.7;font-size:12px;">Learn More</a>
+      <span class="close-banner" onclick="document.getElementById('banner').remove()">✕</span>
     </div>
   </div>
-  <div id="layout">
-    <iframe id="site-frame" src="${targetUrl.href}"></iframe>
-    <div id="resize-handle"></div>
-    <div id="widget-panel">
-      <div class="panel-header">
-        <span class="badge">WIDGET PREVIEW</span>
-        <p>This is how shmakeCut would appear on your website</p>
+
+  <!-- Client site -->
+  <iframe id="site-frame" src="${targetUrl.href}"></iframe>
+
+  <!-- Floating button -->
+  <div id="fab-label">Try the cutting calculator</div>
+  <button id="fab" onclick="togglePopup()">✂️</button>
+
+  <!-- Popup overlay -->
+  <div id="backdrop" onclick="togglePopup()"></div>
+  <div id="popup">
+    <div id="popup-header">
+      <div>
+        <span class="title">✂️ shmakeCut</span>
+        <span class="badge">PREVIEW</span>
       </div>
-      <iframe id="widget-frame" src="${proxyOrigin}/api/widget-frame?key=${embedKey}"></iframe>
+      <button id="popup-close" onclick="togglePopup()">✕</button>
     </div>
+    <iframe id="widget-frame" src="${proxyOrigin}/api/widget-frame?key=${embedKey}"></iframe>
   </div>
+
   <script>
-    // Draggable resize handle
-    (function() {
-      var handle = document.getElementById('resize-handle');
-      var panel = document.getElementById('widget-panel');
-      var dragging = false;
-      handle.addEventListener('mousedown', function(e) {
-        dragging = true;
-        handle.classList.add('active');
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-        // Overlay iframes so mouse events aren't swallowed
-        document.querySelectorAll('iframe').forEach(function(f) { f.style.pointerEvents = 'none'; });
-        e.preventDefault();
-      });
-      document.addEventListener('mousemove', function(e) {
-        if (!dragging) return;
-        var newWidth = window.innerWidth - e.clientX;
-        if (newWidth < 320) newWidth = 320;
-        if (newWidth > window.innerWidth - 200) newWidth = window.innerWidth - 200;
-        panel.style.width = newWidth + 'px';
-      });
-      document.addEventListener('mouseup', function() {
-        if (!dragging) return;
-        dragging = false;
-        handle.classList.remove('active');
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        document.querySelectorAll('iframe').forEach(function(f) { f.style.pointerEvents = ''; });
-      });
-    })();
+    // Hide label after 4 seconds
+    setTimeout(function() {
+      var label = document.getElementById('fab-label');
+      if (label) label.style.transition = 'opacity 0.3s';
+      if (label) label.style.opacity = '0';
+      setTimeout(function() { if (label) label.remove(); }, 300);
+    }, 4000);
+
+    var isOpen = false;
+    function togglePopup() {
+      isOpen = !isOpen;
+      document.getElementById('popup').classList.toggle('visible', isOpen);
+      document.getElementById('backdrop').classList.toggle('visible', isOpen);
+      document.getElementById('fab').classList.toggle('open', isOpen);
+      // Hide label immediately on first open
+      var label = document.getElementById('fab-label');
+      if (label) label.remove();
+    }
   </script>
 </body>
 </html>`;
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).send(sidebarHtml);
+    return res.status(200).send(overlayHtml);
   }
 
   // --- Fetch the target site ---
