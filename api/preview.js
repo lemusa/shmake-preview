@@ -88,6 +88,9 @@ export default async function handler(req, res) {
     }
 
     // --- Inject the widget via iframe (isolated from client CSS/JS) ---
+    // Use absolute URL because the <base> tag points to the client's domain
+    const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+
     const injection = `
 <!-- shmake widget preview -->
 <div id="shmake-widget-section" style="
@@ -113,7 +116,7 @@ export default async function handler(req, res) {
     </div>
     <iframe
       id="shmake-widget-iframe"
-      src="/api/widget-frame?key=${widgetConfig.embedKey}"
+      src="${proxyOrigin}/api/widget-frame?key=${widgetConfig.embedKey}"
       style="width: 100%; border: none; min-height: 700px; border-radius: 12px; background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.08);"
       allow="clipboard-write"
     ></iframe>
