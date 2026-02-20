@@ -99,6 +99,11 @@
       <input type="text" id="afterSelector" placeholder=".content-section, #main, h2">
     </div>
 
+    <div class="form-group">
+      <label>Embed key <span style="opacity:0.5;text-transform:none">(optional — for tenant theming)</span></label>
+      <input type="text" id="embedKey" placeholder="Leave blank for default demo key">
+    </div>
+
     <button onclick="go()">Generate Preview Link →</button>
 
     <div id="linkOutput" style="display:none; margin-top: 16px; padding: 12px 16px; background: #1e293b; border-radius: 10px; border: 1px solid #334155; word-break: break-all;">
@@ -115,8 +120,11 @@
       <strong>Insert after:</strong> Use a CSS selector to control where the widget appears
       on the page. Leave blank to append at the bottom.
       <br><br>
+      <strong>Embed key:</strong> Use a tenant's embed key to load their products, theme, and
+      branding. Leave blank to use the default demo config.
+      <br><br>
       <strong>Direct link format:</strong><br>
-      <code>/demo?site=https://clientsite.co.nz&amp;after=.my-class</code>
+      <code>/demo?site=https://clientsite.co.nz&amp;after=.my-class&amp;key=abc123</code>
     </div>
   </div>
 
@@ -126,9 +134,11 @@
       if (!url) return;
       const fullUrl = url.startsWith('http') ? url : `https://${url}`;
       const after = document.getElementById('afterSelector').value.trim();
+      const key = document.getElementById('embedKey').value.trim();
 
       let link = `/demo?site=${encodeURIComponent(fullUrl)}`;
       if (after) link += `&after=${encodeURIComponent(after)}`;
+      if (key) link += `&key=${encodeURIComponent(key)}`;
 
       // Show the link
       const output = document.getElementById('linkOutput');

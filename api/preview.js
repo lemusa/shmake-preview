@@ -4,6 +4,7 @@
 // Usage: https://your-domain.vercel.app/api/preview?site=https://clientsite.co.nz
 //        Optional: &widget=shmakecut (defaults to shmakecut)
 //        Optional: &after=.some-class  (CSS selector — inject widget after this element)
+//        Optional: &key=EMBED_KEY      (tenant embed key for theming — defaults to demo key)
 
 import { load } from 'cheerio';
 
@@ -15,7 +16,7 @@ const ALLOWED_WIDGETS = {
 };
 
 export default async function handler(req, res) {
-  const { site, widget = 'shmakecut', after } = req.query;
+  const { site, widget = 'shmakecut', after, key } = req.query;
 
   // --- Validation ---
   if (!site) {
@@ -116,7 +117,7 @@ export default async function handler(req, res) {
     </div>
     <iframe
       id="shmake-widget-iframe"
-      src="${proxyOrigin}/api/widget-frame?key=${widgetConfig.embedKey}"
+      src="${proxyOrigin}/api/widget-frame?key=${key || widgetConfig.embedKey}"
       style="width: 100%; border: none; min-height: 700px; border-radius: 12px; background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.08);"
       allow="clipboard-write"
     ></iframe>
