@@ -227,6 +227,17 @@ export default async function handler(req, res) {
       isFullscreen = !isFullscreen;
       document.getElementById('popup').classList.toggle('fullscreen', isFullscreen);
     }
+    // Widget fullscreen via postMessage
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'shmakecut-fullscreen') {
+        var wf = document.getElementById('widget-frame');
+        if (e.data.fullscreen) {
+          wf.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:999999;border:none;';
+        } else {
+          wf.style.cssText = 'flex:1;border:none;width:100%;border-radius:0 0 16px 16px;';
+        }
+      }
+    });
   </script>
 </body>
 </html>`;
@@ -322,6 +333,13 @@ export default async function handler(req, res) {
         window.addEventListener('message', function(e) {
           if (e.data && e.data.type === 'shmakecut-resize') {
             iframe.style.height = e.data.height + 'px';
+          }
+          if (e.data && e.data.type === 'shmakecut-fullscreen') {
+            if (e.data.fullscreen) {
+              iframe.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:999999;border:none;background:white;';
+            } else {
+              iframe.style.cssText = 'width:100%;border:none;min-height:700px;border-radius:12px;background:white;box-shadow:0 4px 24px rgba(0,0,0,0.08);';
+            }
           }
         });
         var interval = setInterval(function() {

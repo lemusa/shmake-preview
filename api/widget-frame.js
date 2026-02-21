@@ -20,6 +20,13 @@ export default function handler(req, res) {
 <body>
   <div id="shmakecut" data-key="${key}"></div>
   <script src="https://demo.shmake.nz/shmakecut.iife.js"></script>
+  <script>
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'shmakecut-fullscreen') {
+        window.parent.postMessage(e.data, '*');
+      }
+    });
+  </script>
 </body>
 </html>`;
 
