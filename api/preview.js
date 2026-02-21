@@ -170,12 +170,14 @@ export default async function handler(req, res) {
 <body>
   <!-- Thin preview banner -->
   <div id="banner">
-    <div>
-      <strong>✂️ shmakeCut Preview</strong>
-      <span style="opacity:0.7;margin-left:10px;">${targetUrl.host}</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="https://www.shmake.nz/assets/shmake-logo-light.png" alt="SHMAKE" style="height:16px;width:auto;">
+      <span style="opacity:0.3;">|</span>
+      <span style="font-weight:500;">Widget Preview</span>
+      <span style="opacity:0.5;font-size:12px;">${targetUrl.host}</span>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
-      <a href="https://shmake.co.nz/shmakecut" target="_blank" style="opacity:0.7;font-size:12px;">Learn More</a>
+      <a href="https://shmake.co.nz" target="_blank" style="opacity:0.7;font-size:12px;">shmake.co.nz</a>
       <span class="close-banner" onclick="document.getElementById('banner').remove()">✕</span>
     </div>
   </div>
@@ -319,7 +321,7 @@ export default async function handler(req, res) {
         letter-spacing: 0.03em;
         margin-bottom: 8px;
       ">WIDGET PREVIEW</span>
-      <p style="color: #64748b; font-size: 14px; margin: 8px 0 0 0;">This is how shmakeCut would appear on your website</p>
+      <p style="color: #64748b; font-size: 14px; margin: 8px 0 0 0;">This is how the widget would appear on your website</p>
     </div>
     <iframe
       id="shmake-widget-iframe"
@@ -399,9 +401,11 @@ export default async function handler(req, res) {
   justify-content: space-between;
   box-shadow: 0 2px 20px rgba(0,0,0,0.2);
 ">
-  <div>
-    <strong>✂️ shmakeCut Preview</strong>
-    <span style="opacity: 0.7; margin-left: 12px;">This is a preview of how the widget could look on your site</span>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <img src="https://www.shmake.nz/assets/shmake-logo-light.png" alt="SHMAKE" style="height: 16px; width: auto;">
+    <span style="opacity: 0.3;">|</span>
+    <span style="font-weight: 500;">Widget Preview</span>
+    <span style="opacity: 0.5; font-size: 12px;">This is a preview of how the widget could look on your site</span>
   </div>
   <div style="display: flex; gap: 12px; align-items: center;">
     <a href="#shmake-widget-section" onclick="event.preventDefault();document.getElementById('shmake-widget-section').scrollIntoView({behavior:'smooth'})" style="
@@ -414,12 +418,12 @@ export default async function handler(req, res) {
       font-size: 13px;
       cursor: pointer;
     ">See Widget ↓</a>
-    <a href="https://shmake.co.nz/shmakecut" target="_blank" style="
+    <a href="https://shmake.co.nz" target="_blank" style="
       color: white;
       opacity: 0.7;
       text-decoration: none;
       font-size: 13px;
-    ">Learn More</a>
+    ">shmake.co.nz</a>
     <span onclick="this.parentElement.parentElement.remove();document.body.style.paddingTop='0'" style="
       cursor: pointer;
       opacity: 0.5;
