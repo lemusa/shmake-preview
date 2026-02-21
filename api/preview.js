@@ -177,7 +177,7 @@ export default async function handler(req, res) {
       <span style="opacity:0.5;font-size:12px;">${targetUrl.host}</span>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
-      <a href="https://shmake.co.nz" target="_blank" style="opacity:0.7;font-size:12px;">shmake.co.nz</a>
+      <a href="https://shmake.nz" target="_blank" style="opacity:0.7;font-size:12px;">shmake.nz</a>
       <span class="close-banner" onclick="document.getElementById('banner').remove()">✕</span>
     </div>
   </div>
@@ -254,7 +254,7 @@ export default async function handler(req, res) {
     const response = await fetch(targetUrl.href, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; shmake-preview/1.0; +https://shmake.co.nz)',
+          'Mozilla/5.0 (compatible; shmake-preview/1.0; +https://shmake.nz)',
         Accept: 'text/html,application/xhtml+xml',
       },
       redirect: 'follow',
@@ -418,12 +418,12 @@ export default async function handler(req, res) {
       font-size: 13px;
       cursor: pointer;
     ">See Widget ↓</a>
-    <a href="https://shmake.co.nz" target="_blank" style="
+    <a href="https://shmake.nz" target="_blank" style="
       color: white;
       opacity: 0.7;
       text-decoration: none;
       font-size: 13px;
-    ">shmake.co.nz</a>
+    ">shmake.nz</a>
     <span onclick="this.parentElement.parentElement.remove();document.body.style.paddingTop='0'" style="
       cursor: pointer;
       opacity: 0.5;
