@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>shmakeCut — Widget Preview Tool</title>
+  <title>shmake — Widget Preview</title>
+  <link rel="icon" href="https://www.shmake.nz/favicon.ico">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -11,156 +12,333 @@
       background: #0a0a1a;
       color: #e2e8f0;
       min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .header-logo {
+      height: 22px;
+      width: auto;
+    }
+    .header-divider {
+      width: 1px;
+      height: 18px;
+      background: rgba(255,255,255,0.15);
+    }
+    .header-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      letter-spacing: 0.02em;
+    }
+    .header-link {
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .header-link:hover { color: #94a3b8; }
+
+    /* ---- Main ---- */
+    .main {
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: calc(100vh - 55px);
+      padding: 40px 20px;
     }
-    .container {
-      max-width: 520px;
-      padding: 40px;
-    }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-    h1 span { color: #e67e22; }
-    .subtitle {
-      color: #64748b;
-      margin-bottom: 32px;
-      font-size: 15px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-      margin-bottom: 8px;
-    }
-    input {
+    .card {
       width: 100%;
-      padding: 12px 16px;
-      border-radius: 10px;
+      max-width: 480px;
+    }
+    .card-heading {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #f1f5f9;
+    }
+    .card-heading span { color: #e67e22; }
+    .card-sub {
+      color: #64748b;
+      margin-bottom: 28px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ---- Form ---- */
+    .field { margin-bottom: 18px; }
+    .field-label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .field-label .optional {
+      opacity: 0.5;
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 400;
+    }
+    .field-input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
       border: 1px solid #334155;
       background: #1e293b;
       color: white;
-      font-size: 15px;
+      font-size: 14px;
       outline: none;
       transition: border-color 0.2s;
+      font-family: inherit;
     }
-    input:focus { border-color: #e67e22; }
-    input::placeholder { color: #475569; }
-    button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #e67e22, #d35400);
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    button:hover { opacity: 0.9; }
-    .hint {
-      margin-top: 24px;
-      padding: 16px;
-      background: #1e293b;
-      border-radius: 10px;
-      font-size: 13px;
-      color: #94a3b8;
-      line-height: 1.6;
-    }
-    .hint code {
-      background: #0f172a;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #e67e22;
-    }
-    .mode-toggle {
+    .field-input:focus { border-color: #e67e22; }
+    .field-input::placeholder { color: #475569; }
+
+    /* ---- Widget selector ---- */
+    .widget-pills {
       display: flex;
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
-    .mode-toggle button {
+    .widget-pill {
       flex: 1;
-      padding: 10px;
-      font-size: 13px;
+      padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #334155;
       background: #1e293b;
       color: #94a3b8;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      text-align: center;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
     }
-    .mode-toggle button.active {
+    .widget-pill:hover { border-color: #475569; color: #e2e8f0; }
+    .widget-pill.active {
+      border-color: #e67e22;
+      color: white;
+      background: rgba(230, 126, 34, 0.12);
+    }
+    .widget-pill .pill-icon { font-size: 16px; margin-right: 4px; }
+    .widget-pill .pill-soon {
+      font-size: 9px;
+      background: #475569;
+      color: #cbd5e1;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+    }
+
+    /* ---- Mode toggle ---- */
+    .mode-toggle {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 9px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 7px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .mode-btn.active {
       border-color: #e67e22;
       color: white;
       background: linear-gradient(135deg, #e67e22, #d35400);
     }
-    .mode-toggle button:not(.active):hover {
+    .mode-btn:not(.active):hover {
       border-color: #475569;
       color: #e2e8f0;
     }
+
+    /* ---- Submit ---- */
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      font-family: inherit;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+
+    /* ---- Link output ---- */
+    .link-output {
+      display: none;
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: #1e293b;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      word-break: break-all;
+    }
+    .link-output a {
+      color: #e67e22;
+      font-size: 12px;
+      text-decoration: none;
+      font-family: monospace;
+    }
+    .copy-btn {
+      margin-left: 8px;
+      cursor: pointer;
+      opacity: 0.5;
+      font-size: 11px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-family: inherit;
+      padding: 0;
+    }
+    .copy-btn:hover { opacity: 1; }
+
+    /* ---- Hint ---- */
+    .hint {
+      margin-top: 24px;
+      padding: 14px;
+      background: #1e293b;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+    .hint strong { color: #94a3b8; }
+    .hint code {
+      background: #0f172a;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: #e67e22;
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 11px;
+      color: #334155;
+    }
+    .footer a { color: #475569; text-decoration: none; }
+    .footer a:hover { color: #64748b; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>✂️ <span>shmakeCut</span> Preview</h1>
-    <p class="subtitle">See how the cutting optimiser widget looks on any website</p>
-
-    <div class="form-group">
-      <label>Client website URL</label>
-      <input type="url" id="siteUrl" placeholder="https://example.co.nz" autofocus>
+  <header class="header">
+    <div class="header-left">
+      <img src="https://www.shmake.nz/assets/shmake-logo-light.png" alt="SHMAKE" class="header-logo">
+      <div class="header-divider"></div>
+      <span class="header-title">Widget Preview</span>
     </div>
+    <a href="https://shmake.co.nz" target="_blank" class="header-link">shmake.co.nz</a>
+  </header>
 
-    <label>Preview mode</label>
-    <div class="mode-toggle">
-      <button type="button" class="active" onclick="setMode('inject')" id="mode-inject">Inject into page</button>
-      <button type="button" onclick="setMode('overlay')" id="mode-overlay">Popup overlay</button>
-    </div>
+  <main class="main">
+    <div class="card">
+      <h1 class="card-heading">Preview <span>widgets</span> on any site</h1>
+      <p class="card-sub">Generate a link that shows a client how your widget looks on their website.</p>
 
-    <div id="inject-options">
-      <div class="form-group">
-        <label>Insert after element <span style="opacity:0.5;text-transform:none">(optional CSS selector)</span></label>
-        <input type="text" id="afterSelector" placeholder=".content-section, #main, h2">
+      <!-- Widget -->
+      <label class="field-label">Widget</label>
+      <div class="widget-pills">
+        <button type="button" class="widget-pill active" onclick="setWidget('shmakecut')" id="wp-shmakecut">
+          <span class="pill-icon">&#9986;</span> shmakeCut
+        </button>
+        <button type="button" class="widget-pill" onclick="setWidget('shmakequote')" id="wp-shmakequote" disabled style="opacity:0.4;cursor:not-allowed;">
+          <span class="pill-icon">&#128196;</span> shmakeQuote <span class="pill-soon">Soon</span>
+        </button>
+      </div>
+
+      <!-- Site URL -->
+      <div class="field">
+        <label class="field-label">Client website URL</label>
+        <input type="url" class="field-input" id="siteUrl" placeholder="https://example.co.nz" autofocus>
+      </div>
+
+      <!-- Mode -->
+      <label class="field-label">Preview mode</label>
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" onclick="setMode('inject')" id="mode-inject">Inject into page</button>
+        <button type="button" class="mode-btn" onclick="setMode('overlay')" id="mode-overlay">Popup overlay</button>
+      </div>
+
+      <!-- Inject options -->
+      <div id="inject-options">
+        <div class="field">
+          <label class="field-label">Insert after element <span class="optional">(optional CSS selector)</span></label>
+          <input type="text" class="field-input" id="afterSelector" placeholder=".content-section, #main, h2">
+        </div>
+      </div>
+
+      <!-- Embed key -->
+      <div class="field">
+        <label class="field-label">Embed key <span class="optional">(optional — tenant theming)</span></label>
+        <input type="text" class="field-input" id="embedKey" placeholder="Leave blank for default demo key">
+      </div>
+
+      <!-- Submit -->
+      <button class="submit-btn" onclick="go()">Generate Preview Link &rarr;</button>
+
+      <!-- Link output -->
+      <div class="link-output" id="linkOutput">
+        <a id="linkAnchor" href="#" target="_blank"></a>
+        <button class="copy-btn" id="copyBtn" onclick="copyLink()">copy</button>
+      </div>
+
+      <!-- Hint -->
+      <div class="hint">
+        <strong>Inject mode</strong> proxies the site HTML and inserts the widget at a CSS selector.
+        Best for static sites.<br>
+        <strong>Popup overlay</strong> works with Wix, Squarespace, and sites that block proxying
+        — shows a floating button that opens the calculator.<br><br>
+        <strong>Direct link:</strong>
+        <code>/demo?site=https://client.co.nz&amp;after=.class&amp;key=abc</code>
       </div>
     </div>
+  </main>
 
-    <div class="form-group">
-      <label>Embed key <span style="opacity:0.5;text-transform:none">(optional — for tenant theming)</span></label>
-      <input type="text" id="embedKey" placeholder="Leave blank for default demo key">
-    </div>
-
-    <button onclick="go()">Generate Preview Link →</button>
-
-    <div id="linkOutput" style="display:none; margin-top: 16px; padding: 12px 16px; background: #1e293b; border-radius: 10px; border: 1px solid #334155; word-break: break-all;">
-      <label style="margin-bottom: 4px;">Preview link</label>
-      <a id="linkAnchor" href="#" target="_blank" style="color: #e67e22; font-size: 13px; text-decoration: none;"></a>
-      <span id="copyBtn" onclick="copyLink()" style="margin-left: 8px; cursor: pointer; opacity: 0.5; font-size: 12px;">copy</span>
-    </div>
-
-    <div class="hint">
-      <strong>How it works:</strong> Enter a client's URL and we'll generate a preview
-      showing their site with the shmakeCut widget overlaid. Perfect for cold outreach —
-      send them the link and let them see it in context.
-      <br><br>
-      <strong>Inject mode:</strong> Proxies the site HTML and inserts the widget at a CSS selector.
-      Best for static sites. Use <strong>Popup overlay</strong> for Wix, Squarespace, or
-      sites that block proxying — shows a floating button on their site that opens the calculator.
-      <br><br>
-      <strong>Direct link format:</strong><br>
-      <code>/demo?site=https://clientsite.co.nz&amp;after=.my-class&amp;key=abc123</code>
-    </div>
-  </div>
+  <footer class="footer">
+    <a href="https://shmake.co.nz" target="_blank">shmake.co.nz</a>
+  </footer>
 
   <script>
     let currentMode = 'inject';
+    let currentWidget = 'shmakecut';
+
+    function setWidget(widget) {
+      currentWidget = widget;
+      document.querySelectorAll('.widget-pill').forEach(el => el.classList.remove('active'));
+      document.getElementById('wp-' + widget).classList.add('active');
+    }
 
     function setMode(mode) {
       currentMode = mode;
@@ -177,6 +355,7 @@
       const key = document.getElementById('embedKey').value.trim();
 
       let link = `/demo?site=${encodeURIComponent(fullUrl)}`;
+      if (currentWidget !== 'shmakecut') link += `&widget=${currentWidget}`;
       if (currentMode === 'overlay') {
         link += '&mode=overlay';
       } else if (after) {
@@ -184,7 +363,6 @@
       }
       if (key) link += `&key=${encodeURIComponent(key)}`;
 
-      // Show the link
       const output = document.getElementById('linkOutput');
       const anchor = document.getElementById('linkAnchor');
       const fullLink = location.origin + link;
@@ -194,14 +372,15 @@
 
       window.open(link, '_blank');
     }
+
     function copyLink() {
       const text = document.getElementById('linkAnchor').textContent;
       navigator.clipboard.writeText(text);
       document.getElementById('copyBtn').textContent = 'copied!';
       setTimeout(() => { document.getElementById('copyBtn').textContent = 'copy'; }, 2000);
     }
-    // Enter key on any field
-    document.querySelectorAll('input').forEach(el => {
+
+    document.querySelectorAll('.field-input').forEach(el => {
       el.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
     });
   </script>
